@@ -1,10 +1,14 @@
 pub mod tokenizer{
-    #[derive(Debug)]
+    use std::borrow::BorrowMut;
+
+    #[derive(Debug, PartialEq, Clone, Copy)]
     pub enum token{
         digits(u8),
         literal_char(u8),
         literal_dec,
         EOF,
+        space,
+        newline,
         equal,
         minor,
         mayor ,
@@ -20,6 +24,8 @@ pub mod tokenizer{
             match (token_var){
                 b'\"' => Some(token::literal_dec),
                 b'\0' => Some(token::EOF),
+                b' ' => Some(token::space),
+                b'\n' => Some(token::newline),
                 b'=' => Some(token::equal),
                 b'<' => Some(token::minor),
                 b'>' => Some(token::mayor),
@@ -30,7 +36,6 @@ pub mod tokenizer{
                 b'{' => Some(token::left_bracket),
                 b'}' => Some(token::right_bracket),
                 b'0'..b'1' => Some(token::digits(token_var)),
-                b' ' => None,
                 _ => Some(token::literal_char(token_var)),
             }
         }
@@ -41,6 +46,8 @@ pub mod tokenizer{
                 token::literal_char(a) => a,
                 token::literal_dec => b'\"',
                 token::EOF => b'\0',
+                token::space => b' ',
+                token::newline => b'\n',
                 token::equal => b'=',
                 token::minor => b'<',
                 token::mayor => b'>',
@@ -67,7 +74,7 @@ pub mod tokenizer{
         true_token,
         false_token, 
          variable(Vec<u8>),*/
-    #[derive(Debug)]
+    #[derive(Debug, Clone,PartialEq)]
     pub enum names{
         variable(Vec<u8>),
         literal(Vec<u8>),
@@ -81,12 +88,13 @@ pub mod tokenizer{
     impl names{
         pub fn agroup_tokens(tokens:Vec<token>) -> Vec<names>{
             let mut group_tokens: Vec<names> = Vec::new();
+            let mut buffered_token: token = token::EOF;
             for i in tokens{
-                if group_tokens.len() > 0{
+                if group_tokens.len() > 0 {
                     let mut last = group_tokens.pop().unwrap();
                 match last {
                     names::literal(ref mut a) => {
-                        if !names::is_literal_complete(group_tokens.last()){
+                        if (a.len() == 1) || a.last().unwrap() != &b'\"' {
                                a.push(i.value());
                                group_tokens.push(last);
                                continue;
@@ -94,6 +102,8 @@ pub mod tokenizer{
                     }
 
                     names::digits(ref mut a) => {
+                        if(buffered_token != token::space && buffered_token != token::newline){
+                            
                         match i {
                             token::digits(b) => {a.push(b);
                                 group_tokens.push(last);
@@ -102,7 +112,10 @@ pub mod tokenizer{
                         }
                     }
 
+                    }
+
                     names::variable(ref mut a) => {
+                        if(buffered_token != token::space && buffered_token != token::newline){
                         match i {
                             token::literal_char(b) => {a.push(b);
                                 group_tokens.push(last);
@@ -110,23 +123,24 @@ pub mod tokenizer{
                             _ => () 
                         }
                     }
+                    }
 
                     names::operation(ref mut a) => {
-                        if (a.last().unwrap() == &token::equal.value() || a.last().unwrap() == &token::minor.value() || a.last().unwrap() == &token::mayor.value()) && a.len() < 2 {
                             match i {
-                                token::equal => {a.push(i.value());
+                                token::equal | token::minor | token::mayor | token::minus | token::plus | token::mult | token::div => {a.push(i.value());
                                     group_tokens.push(last);
                                     continue;},
                                 _ => ()
                             }
                         }
-                    }
 
                     _ => (),
 
                 }
                 group_tokens.push(last);
             }
+            buffered_token = i;
+
                 match i {
                     token::literal_dec => group_tokens.push(names::literal(vec![i.value()])),
                     token::digits(a) => group_tokens.push(names::digits(vec![a])),
@@ -135,17 +149,11 @@ pub mod tokenizer{
                     token::equal | token::minor | token::mayor | token::minus | token::plus | token::mult | token::div => group_tokens.push(names::operation(vec![i.value()])),
                     token::left_bracket => group_tokens.push(names::left_bracket),
                     token::right_bracket => group_tokens.push(names::right_bracket),
+                    _ => (),
                 }
             }
             return group_tokens;
         }
 
-        fn is_literal_complete(token_var: Option<&names>) -> bool{
-            match token_var {
-                Some(&names::literal(ref a)) => a.len() != 1 && a.last().unwrap() == &b'\"' ,
-                Some(_) => true,
-                None => true,
-            }
-        }
     }
 }
