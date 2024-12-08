@@ -6,8 +6,8 @@ use parser::{AST_parser};
 
     pub fn get_types() -> Vec<token>{
         //DEBUG ONLY
-        let mut buffer = String::new();
-        std::io::stdin().read_line(&mut buffer);
+        let mut buffer = String::from("if a + 2 { amongas } elif true {} else {}");
+        //std::io::stdin().read_line(&mut buffer);
         /////////////
 
         let mut tokens: Vec<tokenizer::token> = Vec::new();

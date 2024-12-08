@@ -14,8 +14,8 @@ pub(crate) enum node_type{
 
 #[derive(Debug,Clone)]
 pub(crate) enum statement{
-            //Expresion | Block
-            if_node(node,node),
+            //Expresion | Block | {Elifs} | (Else)
+            if_node(node,node, Vec<node>, Option<node>),
             //Expresion | Block
             elif_node(node,node),
             //Block

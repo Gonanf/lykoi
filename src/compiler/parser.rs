@@ -53,11 +53,34 @@ impl AST_parser {
                 self = exp.1;
                 let block =  self.clone().parse_block(); 
                 self = block.1;
-                return (node{type_node: Box::new(node_type::statement(statement::if_node(exp.0, block.0)))}, self);
+                let mut elif_vec = Vec::new();
+
+                while let Some(value) = self.tokens.last(){
+                    match String::from_utf8_lossy(&value.clone().value()).to_string().as_str() {
+                        "elif" =>  {
+                            self.tokens.pop();
+                            println!("find elif");
+                            let val = self.clone().parse_variable(&b"elif".to_vec());
+                            self = val.1;
+                            elif_vec.push(val.0);
+                        }
+                        _ => break,
+                    }
+                }
+                
+                let mut else_node = None;
+                if let Some(value) = self.tokens.last(){
+                    if value.clone().value() == b"else"{
+                        self.tokens.pop();
+                        let temp_else = self.clone().parse_variable(&b"else".to_vec());
+                        self = temp_else.1;
+                        else_node = Some(temp_else.0);
+                    }
+                }
+                return (node{type_node: Box::new(node_type::statement(statement::if_node(exp.0, block.0,elif_vec,else_node)))}, self);
             },
             "elif" => {
                 let statement = self.clone().tokens.pop().expect("EOF"); 
-                self.clone().tokens.pop().expect("EOF");
                 let exp = self.clone().parse_expression();
                 self = exp.1;
                 let block = self.clone().parse_block();
@@ -78,6 +101,7 @@ impl AST_parser {
         let mut block = Vec::new();
         dbg!("starting");
         while let Some(value) = self.clone().tokens.pop() {
+            dbg!(&value);
             match value {
                 tokenizer::names::variable(vec) => {
                     let m = self.clone().parse_variable(&vec);
@@ -85,21 +109,30 @@ impl AST_parser {
                     block.push(m.0);
                     self.tokens.pop();
                 }
-                tokenizer::names::literal(vec) => (),
-
-                tokenizer::names::digits(vec) => (),
+                tokenizer::names::literal(vec) | tokenizer::names::digits(vec)=> {
+                    let m = self.clone().parse_expression();
+                    self = m.1;
+                    block.push(m.0);
+                    self.tokens.pop();
+                },
 
                 tokenizer::names::EOF => (),
                 tokenizer::names::operation(vec) => (),
 
                 tokenizer::names::left_bracket => {
+                    if block.len() != 0{
                     self.tokens.pop().expect("EOF");
                     let bin = self.clone().parse_block();
                     self = bin.1;
                     block.push(bin.0);
+                }
+                else {
+                    self.tokens.pop();
+                }
                 },
 
                 tokenizer::names::right_bracket => {
+                    self.tokens.pop();
                     return (node{type_node: Box::new(node_type::block(block))},self);
                 },
             };
@@ -109,7 +142,6 @@ impl AST_parser {
 
     fn parse_expression(mut self) -> (node, Self) {
         let token = self.tokens.pop().expect("EOF");
-        dbg!(&token);
         let current_node: node = match token {
             names::variable(vec) => node{type_node: Box::new(node_type::variable(vec))},
             names::literal(vec) => node { type_node: Box::new(node_type::expression(expresions::literal(vec))) },

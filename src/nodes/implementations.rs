@@ -40,7 +40,7 @@ impl types::node_type {
 impl statement {
     pub fn value(self) -> Vec<u8>{
         match self {
-            statement::if_node(node, node1) => b"if".to_vec(),
+            statement::if_node(node, node1, node2, node3) => b"if".to_vec(),
             statement::elif_node(node, node1) => b"elif".to_vec(),
             statement::else_node(node) => b"else".to_vec(),
             statement::for_node(node, node1, node2) => b"for".to_vec(),
