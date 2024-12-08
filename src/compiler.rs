@@ -1,4 +1,7 @@
-use crate::structure::{self, tokenizer::{names, token}};
+pub mod tokenizer;
+use tokenizer::{names,token};
+pub mod parser;
+use parser::{AST_parser};
 
 
     pub fn get_types() -> Vec<token>{
@@ -7,9 +10,9 @@ use crate::structure::{self, tokenizer::{names, token}};
         std::io::stdin().read_line(&mut buffer);
         /////////////
 
-        let mut tokens: Vec<structure::tokenizer::token> = Vec::new();
+        let mut tokens: Vec<tokenizer::token> = Vec::new();
         for i in buffer.chars() {
-            tokens.push(match (structure::tokenizer::token::search_token(i as u8)) {
+            tokens.push(match (tokenizer::token::search_token(i as u8)) {
                 Some(a) => a,
                 None => continue,
             });
@@ -39,8 +42,8 @@ use crate::structure::{self, tokenizer::{names, token}};
 
 
     pub fn first_parse(tokens: Vec<names>){
-        let parser = structure::parser::AST_parser::new_from(tokens);
-        parser.parse_tokens();
+        let mut parser = parser::AST_parser::new_from(tokens);
+        dbg!(parser.parse_block());
     }
 
 

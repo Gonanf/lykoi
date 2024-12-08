@@ -1,3 +1,2 @@
-[] Add a dictionary for every structure in the AST
-[] Make that the Is Reserved function uses the dictionary
-[] In the AST Parser Is Reserved part, only use the dictionary, and take the enum and value from there
+[] Add an optional Vector of Elifs and an optional else to the if Parser and node
+[] Remove the Clone's to allow modifications in the main token list
