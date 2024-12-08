@@ -21,8 +21,9 @@ use crate::structure::{self, tokenizer::{names, token}};
         return tokens;
     }
 
-    pub fn agroup(tokens: Vec<token>){
-        for tk in names::agroup_tokens(tokens){
+    pub fn agroup(tokens: Vec<token>) -> Vec<names>{
+        let data = names::agroup_tokens(tokens);
+        for tk in &data{
             match tk {
                 names::variable(a) => {println!("variable(\n{}\n)",String::from_utf8_lossy(&a))},
                 names::literal(a) => {println!("literal(\n{}\n)",String::from_utf8_lossy(&a))},
@@ -33,6 +34,13 @@ use crate::structure::{self, tokenizer::{names, token}};
                 names::right_bracket => println!("}}"),
             }
         }
+        return data;
+    }
+
+
+    pub fn first_parse(tokens: Vec<names>){
+        let parser = structure::parser::AST_parser::new_from(tokens);
+        parser.parse_tokens();
     }
 
 

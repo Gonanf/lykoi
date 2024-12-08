@@ -1,5 +1,6 @@
 mod compiler;
 mod structure;
 fn main() {
-    compiler::agroup(compiler::get_types());
+    compiler::first_parse(compiler::agroup(compiler::get_types()));
+    
 }
