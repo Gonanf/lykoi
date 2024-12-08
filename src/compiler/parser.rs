@@ -38,41 +38,52 @@ impl AST_parser {
     }
 
     //To optimize
-    fn parse_variable(mut self, token: &Vec<u8>) -> node {
+    fn parse_variable(mut self, token: &Vec<u8>) -> (node, Self) {
         match String::from_utf8_lossy(&token).to_string().as_str() {
             "return" => {
-                return node{ type_node: Box::new(node_type::return_node(self.clone().parse_expression(self.clone().tokens.pop().expect("EOF")))) };
+                let exp = self.tokens.pop().expect("EOF");
+                let bin = self.clone().parse_expression();
+                self = bin.1;
+                return (node{ type_node: Box::new(node_type::return_node(bin.0)) }, self);
             },
             "if" => {
-                let statement = self.clone().tokens.pop().expect("EOF"); 
-                self.clone().tokens.pop().expect("EOF");
-                return node{type_node: Box::new(node_type::statement(statement::if_node(self.clone().parse_expression(statement), self.clone().parse_block())))};
+                println!("OT");
+                let statement = self.tokens.pop().expect("EOF"); 
+                let exp = self.clone().parse_expression();
+                self = exp.1;
+                let block =  self.clone().parse_block(); 
+                self = block.1;
+                return (node{type_node: Box::new(node_type::statement(statement::if_node(exp.0, block.0)))}, self);
             },
             "elif" => {
                 let statement = self.clone().tokens.pop().expect("EOF"); 
                 self.clone().tokens.pop().expect("EOF");
-                return node{type_node: Box::new(node_type::statement(statement::elif_node(self.clone().parse_expression(statement), self.clone().parse_block())))};
+                let exp = self.clone().parse_expression();
+                self = exp.1;
+                let block = self.clone().parse_block();
+                self =  block.1;
+                return (node{type_node: Box::new(node_type::statement(statement::elif_node(exp.0, block.0)))}, self);
             },
             "else" => {
                 self.clone().tokens.pop().expect("EOF"); 
-                return node{type_node: Box::new(node_type::statement(statement::else_node(self.clone().parse_block())))};
+                let block = self.clone().parse_block();
+                self = block.1;
+                return (node{type_node: Box::new(node_type::statement(statement::else_node(block.0)))}, self);
             },
-            a => return node{type_node: Box::new(node_type::variable(token.to_vec()))}
+            a => return (node{type_node: Box::new(node_type::variable(token.to_vec()))}, self)
         }
     }
 
-    pub fn parse_block(mut self) -> node{
+    pub fn parse_block(mut self) -> (node,Self){
         let mut block = Vec::new();
         dbg!("starting");
         while let Some(value) = self.clone().tokens.pop() {
-            dbg!(self.clone().tokens);
             match value {
                 tokenizer::names::variable(vec) => {
-                    println!("variable");
                     let m = self.clone().parse_variable(&vec);
-                    dbg!(&m);
-                    block.push(m);
-                    dbg!(self.tokens.pop());
+                    self = m.1;
+                    block.push(m.0);
+                    self.tokens.pop();
                 }
                 tokenizer::names::literal(vec) => (),
 
@@ -82,38 +93,59 @@ impl AST_parser {
                 tokenizer::names::operation(vec) => (),
 
                 tokenizer::names::left_bracket => {
-                    self.clone().tokens.pop().expect("EOF");
-                    block.push(self.clone().parse_block());
+                    self.tokens.pop().expect("EOF");
+                    let bin = self.clone().parse_block();
+                    self = bin.1;
+                    block.push(bin.0);
                 },
 
-                tokenizer::names::right_bracket => return node{type_node: Box::new(node_type::block(block))},
+                tokenizer::names::right_bracket => {
+                    return (node{type_node: Box::new(node_type::block(block))},self);
+                },
             };
         }
-        return node{type_node: Box::new(node_type::block(block))};
+        return (node{type_node: Box::new(node_type::block(block))},self);
     }
 
-    fn parse_expression(self, token: tokenizer::names) -> node {
+    fn parse_expression(mut self) -> (node, Self) {
+        let token = self.tokens.pop().expect("EOF");
+        dbg!(&token);
         let current_node: node = match token {
             names::variable(vec) => node{type_node: Box::new(node_type::variable(vec))},
             names::literal(vec) => node { type_node: Box::new(node_type::expression(expresions::literal(vec))) },
             names::digits(vec) => node { type_node: Box::new(node_type::expression(expresions::digits(vec))) },
             names::EOF => panic!("EOF"),
-            _ => panic!("Wrong expression"),
+            a => panic!("Wrong expression {}",String::from_utf8_lossy(&a.value()).to_string()),
         };
 
-        let binding = self.clone();
-        let next_token = binding.tokens.last().expect("EOF");
+        let next_token = match self.tokens.last() {
+            Some(a) => a,
+            None => return (current_node,self),
+        };
         match next_token {
-            names::operation(a) => { return self.clone().parse_operation(self.clone().tokens.pop().expect("EOF").value(),current_node)},
+            names::operation(a) => { 
+                println!("Next is operator");
+                let bin = self.clone().parse_operation(current_node);
+                self = bin.1;
+                return (bin.0,self);},
             _ => (),
         }
-        return current_node;
+        return (current_node,self);
     }
 
-    fn parse_operation(self, token: Vec<u8>,current: node) -> node{
+    fn parse_operation(mut self,current: node) -> (node,Self){
+        let token = self.tokens.pop().expect("EOF").value();
+        println!("{}", String::from_utf8_lossy(&token).to_string());
         match String::from_utf8_lossy(&token).to_string().as_str() {
-            "+" => return node{type_node: Box::new(node_type::expression(expresions::binop(current, binops::plus, self.clone().parse_expression(self.clone().tokens.pop().expect("EOF")))))},
+            "+" => {
+                println!("plus");
+                //self.tokens.pop();
+                let bin = self.clone().parse_expression();
+                self = bin.1;
+                return (node{type_node: Box::new(node_type::expression(expresions::binop(current, binops::plus, bin.0)))},self);},
             _ => panic!("todo"),
         }
     }
+
+
 }
