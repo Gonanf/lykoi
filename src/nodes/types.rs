@@ -20,8 +20,8 @@ pub(crate) enum statement{
             elif_node(node,node),
             //Block
             else_node(node),
-            //"in" | Var | Exp
-            for_node(node,node,node),
+            //Exp | block || From | When | End | block 
+            for_node(node,Option<node>,Option<node>, node),
             //Exp | block
             while_node(node,node),
             break_node,

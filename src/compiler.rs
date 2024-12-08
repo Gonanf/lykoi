@@ -6,7 +6,7 @@ use parser::{AST_parser};
 
     pub fn get_types() -> Vec<token>{
         //DEBUG ONLY
-        let mut buffer = String::from("if a + 2 { amongas } elif true {} else {}");
+        let mut buffer = String::from("for i in 20");
         //std::io::stdin().read_line(&mut buffer);
         /////////////
 
@@ -43,7 +43,7 @@ use parser::{AST_parser};
 
     pub fn first_parse(tokens: Vec<names>){
         let mut parser = parser::AST_parser::new_from(tokens);
-        dbg!(parser.parse_block());
+        dbg!(parser.parse_block().0);
     }
 
 

@@ -5,7 +5,7 @@ digits = "1" .. "9" {"1" .. "9"}
 string = ("a" ..  "z" | "A" .. "Z") {("a" ..  "z" | "A" .. "Z")}
 literal = ' " ' {string | digits}' " '
 
-binop = ">=" | "<=" | "\==" | "+" | "-" | "\*" | "/" | ">" | "<" | and | or
+binop = ">=" | "<=" | "\==" | "+" | "-" | "\*" | "/" | ">" | "<" | and | or | in
 unop = "-" | not 
 
 return = return (exp | var)
@@ -15,6 +15,6 @@ while exp "{" block "}"
 |
 if exp "{" block "}" {elif exp "{" block "}"} [else "{" block "}"] 
 |
-for var in exp "{" block "}" 
+for exp | exp , exp , exp | "{" block "}" 
 
 block = {statement} [return]

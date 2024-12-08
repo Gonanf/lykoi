@@ -43,7 +43,7 @@ impl statement {
             statement::if_node(node, node1, node2, node3) => b"if".to_vec(),
             statement::elif_node(node, node1) => b"elif".to_vec(),
             statement::else_node(node) => b"else".to_vec(),
-            statement::for_node(node, node1, node2) => b"for".to_vec(),
+            statement::for_node( .. ) => b"for".to_vec(),
             statement::while_node(node, _) => b"while".to_vec(),
             statement::break_node => b"break".to_vec(),
             statement::continue_node => b"continue".to_vec(),

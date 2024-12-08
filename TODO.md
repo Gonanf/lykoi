@@ -1,0 +1,1 @@
+[] Make the standar For compatible and rethink the system
