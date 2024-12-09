@@ -122,17 +122,6 @@ impl AST_parser {
             }
             "for" => {
                 self.tokens.pop().expect("EOF");
-                let statement = self.tokens.pop().expect("EOF");
-                dbg!(&statement);
-                
-                let var = self.clone().parse_variable(&statement.value());
-                self = var.1;
-                let in_statement = self.tokens.pop().expect("EOF");
-                if in_statement.clone().value() != binops::in_node.value(){
-                    panic!("Expected {:?} ({:?}) found {} after variable declaration (The structure of a for is: 'for' var 'in' exp)",String::from_utf8_lossy(&binops::in_node.value()),String::from_utf8_lossy(&binops::in_node.describe()),String::from_utf8_lossy(&in_statement.clone().value()));
-                }
-                let in_node = self.clone().parse_variable(&in_statement.clone().value());
-                self = in_node.1;
                 let exp = self.clone().parse_expression();
                 self = exp.1;
                 let block = self.clone().parse_block();
@@ -140,7 +129,23 @@ impl AST_parser {
                 return (
                     node {
                         type_node: Box::new(node_type::statement(statement::for_node(
-                            node{type_node: Box::new(node_type::expression(expresions::binop(var.0,binops::in_node,exp.0)))}, None,None,block.0
+                            exp.0, None,None,block.0
+                        ))),
+                    },
+                    self,
+                );
+            }
+
+            "while" => {
+                self.tokens.pop().expect("EOF");
+                let exp = self.clone().parse_expression();
+                self = exp.1;
+                let block = self.clone().parse_block();
+                self = block.1;
+                return (
+                    node {
+                        type_node: Box::new(node_type::statement(statement::while_node(
+                            exp.0,block.0
                         ))),
                     },
                     self,
@@ -275,7 +280,6 @@ impl AST_parser {
         match String::from_utf8_lossy(&token).to_string().as_str() {
             "+" => {
                 println!("plus");
-                //self.tokens.pop();
                 let bin = self.clone().parse_expression();
                 self = bin.1;
                 return (
@@ -283,6 +287,126 @@ impl AST_parser {
                         type_node: Box::new(node_type::expression(expresions::binop(
                             current,
                             binops::plus,
+                            bin.0,
+                        ))),
+                    },
+                    self,
+                );
+            }
+            "-" => {
+                println!("minus");
+                let bin = self.clone().parse_expression();
+                self = bin.1;
+                return (
+                    node {
+                        type_node: Box::new(node_type::expression(expresions::binop(
+                            current,
+                            binops::minus,
+                            bin.0,
+                        ))),
+                    },
+                    self,
+                );
+            }
+            "*" => {
+                println!("mult");
+                let bin = self.clone().parse_expression();
+                self = bin.1;
+                return (
+                    node {
+                        type_node: Box::new(node_type::expression(expresions::binop(
+                            current,
+                            binops::mult,
+                            bin.0,
+                        ))),
+                    },
+                    self,
+                );
+            }
+            "/" => {
+                println!("div");
+                let bin = self.clone().parse_expression();
+                self = bin.1;
+                return (
+                    node {
+                        type_node: Box::new(node_type::expression(expresions::binop(
+                            current,
+                            binops::div,
+                            bin.0,
+                        ))),
+                    },
+                    self,
+                );
+            }
+            "==" => {
+                println!("equal");
+                let bin = self.clone().parse_expression();
+                self = bin.1;
+                return (
+                    node {
+                        type_node: Box::new(node_type::expression(expresions::binop(
+                            current,
+                            binops::equal,
+                            bin.0,
+                        ))),
+                    },
+                    self,
+                );
+            }
+            ">=" => {
+                println!("mayor_equal");
+                let bin = self.clone().parse_expression();
+                self = bin.1;
+                return (
+                    node {
+                        type_node: Box::new(node_type::expression(expresions::binop(
+                            current,
+                            binops::mayor_equal,
+                            bin.0,
+                        ))),
+                    },
+                    self,
+                );
+            }
+            "<=" => {
+                println!("minor_equal");
+                let bin = self.clone().parse_expression();
+                self = bin.1;
+                return (
+                    node {
+                        type_node: Box::new(node_type::expression(expresions::binop(
+                            current,
+                            binops::minor_equal,
+                            bin.0,
+                        ))),
+                    },
+                    self,
+                );
+            }
+            ">" => {
+                println!("mayor");
+                let bin = self.clone().parse_expression();
+                self = bin.1;
+                return (
+                    node {
+                        type_node: Box::new(node_type::expression(expresions::binop(
+                            current,
+                            binops::mayor,
+                            bin.0,
+                        ))),
+                    },
+                    self,
+                );
+            }
+            "<" => {
+                println!("minor");
+                let bin = self.clone().parse_expression();
+                self = bin.1;
+                return (
+                    node {
+                        type_node: Box::new(node_type::expression(expresions::binop(
+                            current,
+                            binops::minor,
                             bin.0,
                         ))),
                     },
@@ -298,6 +422,36 @@ impl AST_parser {
                         type_node: Box::new(node_type::expression(expresions::binop(
                             current,
                             binops::in_node,
+                            bin.0,
+                        ))),
+                    },
+                    self,
+                );
+            }
+            "and" => {
+                println!("and");
+                let bin = self.clone().parse_expression();
+                self = bin.1;
+                return (
+                    node {
+                        type_node: Box::new(node_type::expression(expresions::binop(
+                            current,
+                            binops::and,
+                            bin.0,
+                        ))),
+                    },
+                    self,
+                );
+            }
+            "or" => {
+                println!("or");
+                let bin = self.clone().parse_expression();
+                self = bin.1;
+                return (
+                    node {
+                        type_node: Box::new(node_type::expression(expresions::binop(
+                            current,
+                            binops::or,
                             bin.0,
                         ))),
                     },

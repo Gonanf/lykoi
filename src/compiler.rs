@@ -6,7 +6,7 @@ use parser::{AST_parser};
 
     pub fn get_types() -> Vec<token>{
         //DEBUG ONLY
-        let mut buffer = String::from("for i in 20");
+        let mut buffer = String::from("if a + 2 == 20 { for a in 30 { amongas }} else {}");
         //std::io::stdin().read_line(&mut buffer);
         /////////////
 
