@@ -1,7 +1,16 @@
 use super::node;
 
-#[derive(Debug,Clone )]
-pub(crate) enum node_type{
+/*#[derive(Debug, Clone)]
+pub enum primitives {
+    integer,
+    string,
+    character,
+    none,
+    bool,
+} */
+
+#[derive(Debug, Clone)]
+pub(crate) enum node_type {
     variable(Vec<u8>),
     expression(expresions),
     //Exp || Var
@@ -11,28 +20,27 @@ pub(crate) enum node_type{
     block(Vec<node>),
 }
 
-
-#[derive(Debug,Clone)]
-pub(crate) enum statement{
-            //Expresion | Block | {Elifs} | (Else)
-            if_node(node,node, Vec<node>, Option<node>),
-            //Expresion | Block
-            elif_node(node,node),
-            //Block
-            else_node(node),
-            //Exp | block || From | When | End | block 
-            for_node(node,Option<node>,Option<node>, node),
-            //Exp | block
-            while_node(node,node),
-            break_node,
-            continue_node,
-            //Var | "=" | Exp
-            assignment(node,node)
+#[derive(Debug, Clone)]
+pub(crate) enum statement {
+    //Expresion | Block | {Elifs} | (Else)
+    if_node(node, node, Vec<node>, Option<node>),
+    //Expresion | Block
+    elif_node(node, node),
+    //Block
+    else_node(node),
+    //Exp | block || From | When | End | block
+    for_node(node, Option<node>, Option<node>, node),
+    //Exp | block
+    while_node(node, node),
+    break_node,
+    continue_node,
+    //Var | "=" | Exp
+    assignment(node, node),
 }
 
-#[derive(Debug,Clone )]
+#[derive(Debug, Clone)]
 
-pub(crate) enum binops{
+pub(crate) enum binops {
     //binop
     mayor,
     minor,
@@ -49,26 +57,25 @@ pub(crate) enum binops{
     or,
 }
 
+#[derive(Debug, Clone)]
 
-#[derive(Debug,Clone )]
-
-pub(crate) enum unops{
+pub(crate) enum unops {
     negative,
-    not_node
+    not_node,
 }
 
-#[derive(Debug,Clone )]
+#[derive(Debug, Clone)]
 
-pub(crate) enum expresions{
-//Exp | Binop | Exp
-binop(node,binops,node),
-//Unop | Exp
-unop(unops,node),
-true_exp,
-false_exp,
-none_exp,
-digits(Vec<u8>),
-literal(Vec<u8>),
-//Variable | Expression 
-node(node),
+pub(crate) enum expresions {
+    //Exp | Binop | Exp
+    binop(node, binops, node),
+    //Unop | Exp
+    unop(unops, node),
+    true_exp,
+    false_exp,
+    none_exp,
+    digits(Vec<u8>),
+    literal(Vec<u8>),
+    //Variable | Expression
+    node(node),
 }
