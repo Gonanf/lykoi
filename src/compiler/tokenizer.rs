@@ -106,7 +106,7 @@ impl names {
         let mut group_tokens: Vec<names> = Vec::new();
         let mut buffered_token: token = token::EOF;
         let mut line = 0;
-        let mut col = 0;
+        let mut col = 1;
         for i in tokens {
             line += 1;
             if group_tokens.len() > 0 {

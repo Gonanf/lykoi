@@ -8,7 +8,7 @@ use crate::nodes::{self, interpreter};
 
 pub fn get_types() -> Vec<token> {
     //DEBUG ONLY
-    let mut buffer = String::from("if 2 == 20 { }");
+    let mut buffer = String::from("a = \"amongas\" a");
     //std::io::stdin().read_line(&mut buffer);
     /////////////
 
@@ -54,8 +54,9 @@ pub fn agroup(tokens: Vec<token>) -> Vec<names> {
 
 pub fn first_parse(tokens: Vec<names>) -> nodes::node {
     let mut parser = parser::AST_parser::new_from(tokens);
-    return parser.parse_block().0;
-    //dbg!(parser.parse_block().0);
+    let ps = parser.parse_block().0;
+    dbg!(&ps);
+    return ps;
 }
 
 pub fn interpretate(tokens: nodes::node) {

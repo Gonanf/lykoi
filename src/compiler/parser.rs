@@ -40,6 +40,8 @@ impl AST_parser {
                 let exp = self.tokens.pop().expect("EOF");
                 let bin = self.clone().parse_expression();
                 self = bin.1;
+                self.tokens.pop();
+
                 return (
                     node {
                         type_node: Box::new(node_type::return_node(bin.0)),
@@ -104,6 +106,8 @@ impl AST_parser {
                         else_node = Some(temp_else.0);
                     }
                 }
+                self.tokens.pop();
+
                 return (
                     node {
                         type_node: Box::new(node_type::statement(statement::if_node(
@@ -121,6 +125,8 @@ impl AST_parser {
                 self = exp.1;
                 let block = self.clone().parse_block();
                 self = block.1;
+                self.tokens.pop();
+
                 return (
                     node {
                         type_node: Box::new(node_type::statement(statement::elif_node(
@@ -136,6 +142,8 @@ impl AST_parser {
                 self.tokens.pop().expect("EOF");
                 let block = self.clone().parse_block();
                 self = block.1;
+                self.tokens.pop();
+
                 return (
                     node {
                         type_node: Box::new(node_type::statement(statement::else_node(block.0))),
@@ -151,6 +159,8 @@ impl AST_parser {
                 self = exp.1;
                 let block = self.clone().parse_block();
                 self = block.1;
+                self.tokens.pop();
+
                 return (
                     node {
                         type_node: Box::new(node_type::statement(statement::for_node(
@@ -169,6 +179,8 @@ impl AST_parser {
                 self = exp.1;
                 let block = self.clone().parse_block();
                 self = block.1;
+                self.tokens.pop();
+
                 return (
                     node {
                         type_node: Box::new(node_type::statement(statement::while_node(
@@ -182,6 +194,44 @@ impl AST_parser {
             }
 
             a => {
+                //self.tokens.pop();
+                if self.tokens.len() > 2 {
+                    if let names::operation(b, line_b, col_b) = self
+                        .clone()
+                        .tokens
+                        .get(self.clone().tokens.len() - 2)
+                        .expect("EOF")
+                    {
+                        self.tokens.pop();
+                        if String::from_utf8_lossy(&b).to_string().as_str() == "=" {
+                            self.tokens.pop();
+                            let right = self.clone().parse_expression();
+                            self = right.1;
+
+                            return (
+                                node {
+                                    type_node: Box::new(node_type::statement(
+                                        statement::assignment(
+                                            node {
+                                                type_node: Box::new(node_type::variable(
+                                                    token.to_vec(),
+                                                )),
+                                                line,
+                                                col,
+                                            },
+                                            right.0,
+                                        ),
+                                    )),
+                                    line: line_b.clone(),
+                                    col: col_b.clone(),
+                                },
+                                self,
+                            );
+                        }
+                    }
+                }
+                self.tokens.pop();
+
                 return (
                     node {
                         type_node: Box::new(node_type::variable(token.to_vec())),
@@ -189,7 +239,7 @@ impl AST_parser {
                         col,
                     },
                     self,
-                )
+                );
             }
         }
     }
@@ -202,9 +252,9 @@ impl AST_parser {
             match value {
                 tokenizer::names::variable(vec, line, col) => {
                     let m = self.clone().parse_variable(&vec, line, col);
+                    println!("VAVA");
                     self = m.1;
                     block.push(m.0);
-                    self.tokens.pop();
                 }
                 tokenizer::names::literal(..) | tokenizer::names::digits(..) => {
                     let m = self.clone().parse_expression();
