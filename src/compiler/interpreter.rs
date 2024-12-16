@@ -2,9 +2,11 @@ use std::{
     any::Any, borrow::Borrow, env::var, f32::consts::E, fmt, fmt::Display, fs::read, iter::repeat,
 };
 
-use super::{node, node_type, types};
+use crate::nodes;
 
-#[derive(Debug)]
+use nodes::{node, types::node_type, types};
+
+#[derive(Debug,Clone)]
 struct variables {
     name: String,
     value: values,
@@ -41,7 +43,7 @@ impl values {
         }
     }
 }
-#[derive(Debug)]
+#[derive(Debug,Clone)]
 enum values {
     bool(bool),
     string(String),
@@ -88,17 +90,26 @@ impl interpreter {
     }
 
     fn interpretate_expression(stack: &mut Vec<variables>, tok: &node) -> values {
+        if let node_type::variable(name) = tok.type_node.borrow(){
+            for i in stack.clone() {
+                if i.name == String::from_utf8_lossy(&name).to_string() {
+                    return i.value.clone();
+                }
+            }
+        }
         if let node_type::expression(exp) = tok.type_node.borrow() {
             match exp {
                 types::expresions::none_exp => return values::none,
-                types::expresions::node(a) => Self::interpretate_expression(stack, a),
+                types::expresions::node(a) => {
+                    Self::interpretate_expression(stack, a);
+                },
                 types::expresions::true_exp => return values::bool(true),
                 types::expresions::false_exp => return values::bool(false),
                 types::expresions::digits(a) => {
                     let mut value: i32 = 0;
                     for (index, val) in a.iter().enumerate() {
-                        value = value.pow(index as u32);
-                        value += i32::from(val.clone());
+                        value *= 10_i32.pow(index as u32);
+                        value += i32::from(val.clone()- b'0') ;
                     }
                     return values::integer(value);
                 }
@@ -163,6 +174,9 @@ impl interpreter {
                             return values::integer(a / b);
                         }
                         types::binops::equal => {
+                            //dbg!(&expa);
+                            //dbg!(&expb);
+
                             if let values::bool(a) = expa {
                                 if let values::bool(b) = expb {
                                     return values::bool(a == b);
@@ -269,9 +283,9 @@ impl interpreter {
         if let node_type::statement(stat) = tok.type_node.borrow() {
             match stat {
                 types::statement::if_node(exp, block, elifs, elses) => {
-                    dbg!(exp);
+                    //dbg!(exp);
                     let exp_n = Self::interpretate_expression(stack, exp);
-                    dbg!(&exp_n);
+                    //dbg!(&exp_n);
                     let condition = match exp_n {
                         values::bool(a) => a,
                         _ => {
@@ -284,11 +298,33 @@ impl interpreter {
                         for i in elifs {
                             Self::interpretate_statement(stack, i);
                         }
+                        
+                    }
+                    else{
+                        dbg!(elses);
                         match elses {
                             Some(a) => Self::interpretate_statement(stack, a),
                             _ => (),
                         }
                     }
+                }
+                types::statement::elif_node(exp, block) => {
+                    //dbg!(exp);
+                    let exp_n = Self::interpretate_expression(stack, exp);
+                    //dbg!(&exp_n);
+                    let condition = match exp_n {
+                        values::bool(a) => a,
+                        _ => {
+                            eprintln!("Condition is not a boolean");
+                            return;
+                        }
+                    };
+                    if condition {
+                        Self::interpretate_block(stack, block);
+                    }
+                }
+                types::statement::else_node(block) => {
+                    Self::interpretate_block(stack, block);
                 }
                 types::statement::assignment(a, b) => {
                     let expb = Self::interpretate_expression(stack, b);
@@ -303,7 +339,7 @@ impl interpreter {
                             name: String::from_utf8_lossy(&vala).to_string(),
                             value: expb,
                         });
-                        dbg!(&stack);
+                        //dbg!(&stack);
                     }
                 }
                 _ => (),

@@ -1,4 +1,5 @@
 use core::panic;
+use std::borrow::Borrow;
 
 use super::tokenizer::{self, names, token};
 use crate::nodes::{
@@ -106,7 +107,7 @@ impl AST_parser {
                         else_node = Some(temp_else.0);
                     }
                 }
-                self.tokens.pop();
+                //self.tokens.pop();
 
                 return (
                     node {
@@ -373,9 +374,9 @@ impl AST_parser {
     }
 
     fn parse_operation(mut self, current: node) -> (node, Self) {
-        let token = self.tokens.pop().expect("EOF").value();
-        println!("{}", String::from_utf8_lossy(&token).to_string());
-        if let Some(val) = binops::is_reserved(&token) {
+        let token = self.tokens.pop().expect("EOF");
+        println!("{}", String::from_utf8_lossy(&token.clone().value()).to_string());
+        if let Some(val) = binops::is_reserved(&token.clone().value()) {
             println!(
                 "{} ({})",
                 String::from_utf8_lossy(&val.clone().value()),
@@ -383,6 +384,23 @@ impl AST_parser {
             );
             let bin = self.clone().parse_expression();
             self = bin.clone().1;
+            if let node_type::expression(expresions::binop(a,bino,b )) = bin.0.type_node.borrow(){
+                if val.clone().get_priority() < bino.clone().get_priority(){
+                    return (
+                        node {
+                            type_node: Box::new(node_type::expression(expresions::binop(
+                                node { type_node: Box::new(node_type::expression(expresions::binop(current.clone(), val, a.clone()))), line: token.clone().get_pos().0, col: token.get_pos().1 },
+                                bino.clone(),
+                                b.clone(),
+                            ))),
+                            line: current.clone().line,
+                            col: current.clone().col,
+                        },
+                        self,
+                    );
+                }
+            } 
+
             return (
                 node {
                     type_node: Box::new(node_type::expression(expresions::binop(

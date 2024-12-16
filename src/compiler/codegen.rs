@@ -1,6 +1,7 @@
 use std::borrow::Borrow;
+use crate::nodes;
 
-use super::{node, node_type, types};
+use nodes::{node, types::node_type, types};
 
 impl node {
     pub fn codegen(self) {

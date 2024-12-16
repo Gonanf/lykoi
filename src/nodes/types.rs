@@ -10,7 +10,7 @@ pub enum primitives {
 } */
 
 #[derive(Debug, Clone)]
-pub(crate) enum node_type {
+pub enum node_type {
     variable(Vec<u8>),
     expression(expresions),
     //Exp || Var
@@ -21,7 +21,7 @@ pub(crate) enum node_type {
 }
 
 #[derive(Debug, Clone)]
-pub(crate) enum statement {
+pub enum statement {
     //Expresion | Block | {Elifs} | (Else)
     if_node(node, node, Vec<node>, Option<node>),
     //Expresion | Block
@@ -40,33 +40,39 @@ pub(crate) enum statement {
 
 #[derive(Debug, Clone)]
 
-pub(crate) enum binops {
+pub enum binops {
     //binop
-    mayor,
-    minor,
-    mayor_equal,
-    minor_equal,
-    equal,
     in_node,
     assign,
     plus,
     minus,
     div,
     mult,
-    and,
+    mayor,
+    minor,
+    mayor_equal,
+    minor_equal,
+    equal,
     or,
+    and,
+}
+
+impl binops{
+    pub fn get_priority(self) -> u8{
+        return self as u8;
+    }
 }
 
 #[derive(Debug, Clone)]
 
-pub(crate) enum unops {
+pub enum unops {
     negative,
     not_node,
 }
 
 #[derive(Debug, Clone)]
 
-pub(crate) enum expresions {
+pub enum expresions {
     //Exp | Binop | Exp
     binop(node, binops, node),
     //Unop | Exp

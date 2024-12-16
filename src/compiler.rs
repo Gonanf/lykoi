@@ -1,14 +1,15 @@
 pub mod tokenizer;
 use tokenizer::{names, token};
 pub mod parser;
-
+pub mod interpreter;
+pub mod codegen;
 use parser::AST_parser;
 
-use crate::nodes::{self, interpreter};
+use crate::nodes;
 
 pub fn get_types() -> Vec<token> {
     //DEBUG ONLY
-    let mut buffer = String::from("a = \"amongas\" a");
+    let mut buffer = String::from("a = 10 if a + 2 == 15 { b = 30 } else { b = 20 } b");
     //std::io::stdin().read_line(&mut buffer);
     /////////////
 
