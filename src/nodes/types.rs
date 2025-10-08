@@ -57,12 +57,6 @@ pub enum binops {
     and,
 }
 
-impl binops{
-    pub fn get_priority(self) -> u8{
-        return self as u8;
-    }
-}
-
 #[derive(Debug, Clone)]
 
 pub enum unops {

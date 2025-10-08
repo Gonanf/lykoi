@@ -385,7 +385,8 @@ impl AST_parser {
             let bin = self.clone().parse_expression();
             self = bin.clone().1;
             if let node_type::expression(expresions::binop(a,bino,b )) = bin.0.type_node.borrow(){
-                if val.clone().get_priority() < bino.clone().get_priority(){
+                if val.clone().get_priority() > bino.clone().get_priority(){
+                    /*si el op actual tiene mas prioridad que el op anterior reordeno*/
                     return (
                         node {
                             type_node: Box::new(node_type::expression(expresions::binop(
