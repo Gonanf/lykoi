@@ -152,6 +152,19 @@ impl binops {
             binops::minus => b"minus".to_vec(),
         }
     }
+    pub fn get_priority(self) -> u8 {
+        match self {
+            binops::mult | binops::div => 7,
+            binops::plus | binops::minus => 6,
+            binops::mayor | binops::minor | 
+            binops::mayor_equal | binops::minor_equal => 5,
+            binops::equal => 4,
+            binops::and => 3,
+            binops::or => 2,
+            binops::assign => 1,
+            binops::in_node => 0,
+        }
+    }
 }
 
 
